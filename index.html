@@ -197,6 +197,7 @@
     let enemyMaxHp = 10;
     let enemyHp = 10;
     
+    let currentMaxTime = 10.0;
     let timeLeft = 10.0;
     let isAnswering = false;
     let selectedAnswer = null;
@@ -278,17 +279,21 @@
       isAnswering = false;
       selectedAnswer = null;
       isCorrect = null;
-      timeLeft = 10.0;
       damageAnim = false;
       shakeAnim = false;
 
+      let nextQ;
       if (index >= queue.length) {
         questionQueue = shuffleArray(ALL_QUESTIONS);
         currentQIndex = 0;
-        setupSortQuestion(questionQueue[0]);
+        nextQ = questionQueue[0];
       } else {
-        setupSortQuestion(queue[index]);
+        nextQ = queue[index];
       }
+
+      currentMaxTime = nextQ.type === 'sort' ? 20.0 : 10.0;
+      timeLeft = currentMaxTime;
+      setupSortQuestion(nextQ);
       
       renderApp();
       startTimer();
@@ -329,8 +334,8 @@
     function updateTimerUI() {
       const bar = document.getElementById('timer-bar');
       if (bar) {
-        bar.style.width = `${(timeLeft / 10) * 100}%`;
-        bar.className = `h-full transition-all duration-100 ease-linear ${timeLeft > 5 ? 'bg-cyan-400' : timeLeft > 2 ? 'bg-yellow-400' : 'bg-rose-500'}`;
+        bar.style.width = `${(timeLeft / currentMaxTime) * 100}%`;
+        bar.className = `h-full transition-all duration-100 ease-linear ${timeLeft > currentMaxTime / 2 ? 'bg-cyan-400' : timeLeft > currentMaxTime * 0.2 ? 'bg-yellow-400' : 'bg-rose-500'}`;
       }
     }
 
@@ -503,7 +508,7 @@
             
             <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 mb-6 max-w-md mx-auto shadow-xl">
               <ul class="text-left space-y-2 text-slate-300 font-medium text-sm md:text-base">
-                <li class="flex items-center"><i data-lucide="zap" class="w-4 h-4 mr-2 text-yellow-400"></i> 各問題の制限時間は10秒！</li>
+                <li class="flex items-center"><i data-lucide="zap" class="w-4 h-4 mr-2 text-yellow-400"></i> 制限時間は10秒！（並べ替えは20秒）</li>
                 <li class="flex items-center"><i data-lucide="arrow-right" class="w-4 h-4 mr-2 text-green-400"></i> 10問正解ごとに偏差値UP！</li>
                 <li class="flex items-center"><i data-lucide="heart" class="w-4 h-4 mr-2 text-rose-400"></i> 3回間違えるとゲームオーバー！</li>
                 <li class="flex items-center"><i data-lucide="flag" class="w-4 h-4 mr-2 text-blue-400"></i> 40問正解で 第二志望 合格！</li>
@@ -528,8 +533,8 @@
       const q = questionQueue[currentQIndex];
       if (!q) return '';
 
-      const timerColor = timeLeft > 5 ? 'bg-cyan-400' : timeLeft > 2 ? 'bg-yellow-400' : 'bg-rose-500';
-      const timerWidth = `${(timeLeft / 10) * 100}%`;
+      const timerColor = timeLeft > currentMaxTime / 2 ? 'bg-cyan-400' : timeLeft > currentMaxTime * 0.2 ? 'bg-yellow-400' : 'bg-rose-500';
+      const timerWidth = `${(timeLeft / currentMaxTime) * 100}%`;
       const enemyInfo = getEnemyInfo();
 
       let heartsHtml = '';
